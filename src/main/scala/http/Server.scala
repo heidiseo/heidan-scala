@@ -38,6 +38,23 @@ object Server extends App with DefaultJsonProtocol {
         group += person
         complete(group.toList)
       }
+    } ~ (path("hello" / Segment) & put) { id =>
+      entity(as[Person]) { newPerson =>
+        group.find(_.id == id.toInt) match {
+          case Some(p) =>
+            group -= p
+            group += newPerson
+            complete(group.toList)
+          case None => complete("This ID doesn't exist")
+        }
+      }
+    } ~ (path("hello" / Segment) & delete) { id =>
+      group.find(_.id == id.toInt) match {
+        case Some(p) =>
+          group -= p
+          complete(group.toList)
+        case None => complete("This ID doesn't exist")
+      }
     }
 
   val bindingFuture = Http().bindAndHandle(route, host, port)
@@ -50,7 +67,6 @@ object Server extends App with DefaultJsonProtocol {
 
   case class Person(id: Int, name: String, country: String)
 
-
   val bokyung: Person = Person(1, "Bokyung aka the mommy", "South Korea")
   val donggi: Person = Person(2, "Donggi aka the brooo", "South Korea")
   val hakyoung: Person = Person(3, "Hakyoung aka the daddy", "South Korea")
@@ -60,6 +76,5 @@ object Server extends App with DefaultJsonProtocol {
   val heidi: Person = Person(7, "Heidi aka heiz", "South Korea")
   val joe: Person = Person(8, "Joe aka the fat boiiii", "England")
   var group: ListBuffer[Person] = ListBuffer(dan, heidi, bokyung, donggi, hakyoung, namsoon, anna, joe)
-
 
 }
