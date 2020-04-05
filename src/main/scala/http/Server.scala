@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
@@ -33,6 +33,11 @@ object Server extends App with DefaultJsonProtocol {
         case Some(person) => complete(person.toJson)
         case None => complete("This ID doesn't exist")
       }
+    } ~ (path("hello") & post) {
+      entity(as[Person]) { person =>
+        group += person
+        complete(group.toList)
+      }
     }
 
   val bindingFuture = Http().bindAndHandle(route, host, port)
@@ -54,7 +59,7 @@ object Server extends App with DefaultJsonProtocol {
   val dan: Person = Person(6, "Dan aka GingerViking", "England")
   val heidi: Person = Person(7, "Heidi aka heiz", "South Korea")
   val joe: Person = Person(8, "Joe aka the fat boiiii", "England")
-  val group: List[Person] = List(dan, heidi, bokyung, donggi, hakyoung, namsoon, anna, joe)
+  var group: ListBuffer[Person] = ListBuffer(dan, heidi, bokyung, donggi, hakyoung, namsoon, anna, joe)
 
 
 }
